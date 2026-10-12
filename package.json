@@ -1,8 +1,30 @@
 {
-  "name": "mcdc-tool",
+  "name": "mcdc-analyzer",
   "version": "0.1.0",
   "private": true,
-  "description": "Browser-based static MC/DC (modified condition/decision coverage) analyzer",
+  "description": "Browser-based MC/DC (modified condition/decision coverage) analyzer for JavaScript and TypeScript",
+  "license": "MIT",
+  "author": "Arjay Osma",
+  "homepage": "https://arjayosma.github.io/mcdc-analyzer/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arjayosma/mcdc-analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arjayosma/mcdc-analyzer/issues"
+  },
+  "keywords": [
+    "mcdc",
+    "mc/dc",
+    "coverage",
+    "modified-condition-decision-coverage",
+    "test-coverage",
+    "do-178c",
+    "iso-26262",
+    "static-analysis",
+    "typescript",
+    "javascript"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,20 +33,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "engines": {
     "node": ">=20.19"
-  },
-  "devDependencies": {
-    "@babel/types": "^7.29.8",
-    "@eslint/js": "^9.39.5",
-    "eslint": "^9.39.5",
-    "globals": "^17.13.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.71.1",
-    "vite": "^7.1.0",
-    "vitest": "^4.0.0"
   },
   "dependencies": {
     "@babel/parser": "^7.29.9",
@@ -36,5 +49,15 @@
     "@lezer/highlight": "^1.2.5",
     "elkjs": "^0.10.2",
     "sucrase": "^3.35.1"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.29.8",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^7.1.0",
+    "vitest": "^4.0.0"
   }
 }

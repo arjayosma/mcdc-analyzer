@@ -1,120 +1,136 @@
 # MC/DC Analyzer
 
-A browser-based **modified condition/decision coverage (MC/DC)** analyzer. Paste JavaScript or TypeScript, or open a whole project folder, and it works out, for every decision in the code, which tests prove that each condition independently affects the outcome, and the smallest set of tests that does it for all of them.
+[![CI](https://github.com/arjayosma/mcdc-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/arjayosma/mcdc-analyzer/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-It runs entirely in the browser as a static site. Nothing is uploaded anywhere.
+**Find the smallest set of tests that proves every condition in your JavaScript or TypeScript actually matters, then measure how many of them you have.**
 
-## Why
+Paste a function or open a whole folder. For every `if`, loop, ternary and `&&` / `||`, MC/DC Analyzer works out which tests you need, traces each one through your code, runs your test calls to measure real coverage, and exports a shareable report with a ready-made AI prompt for the missing tests. Everything runs in your browser; your code never leaves your machine.
 
-Line and branch coverage can report 100% while parts of a condition were never really tested. In `if (user.isAdmin || (user.isOwner && !doc.locked))`, two tests (an admin, and a regular non-owner) run every line and take both branches. Neither one checks that `isOwner` or `!doc.locked` matters.
+**[Try the live demo →](https://arjayosma.github.io/mcdc-analyzer/)**
 
-MC/DC closes that gap. Use this tool to:
+![MC/DC Analyzer: code with the traced path on the left, control-flow graph, condition flow and test vectors on the right](docs/images/analyzer.png)
 
-- **Write tests for logic-heavy code** such as permissions, validation, pricing and feature flags, using the required tests as your test cases.
-- **Review complex conditions.** A large "MC/DC needs N" means the logic is hard to test and may be worth simplifying.
-- **Refactor safely.** Write the minimal set before changing a condition.
-- **Find redundant logic.** Conditions that "cannot be shown" never change the outcome.
-- **Plan testing for safety-critical work.** MC/DC is required for DO-178C Level A avionics software and highly recommended for ISO 26262 ASIL D.
+## Why MC/DC?
 
-The analysis tells you which tests you **need**. The built-in **Tests** panel then measures which ones your calls **actually run**, so you can see your real MC/DC coverage and what is still missing.
+Line and branch coverage can report 100% while parts of a condition were never really tested. In
+
+```ts
+if (user.isAdmin || (user.isOwner && !doc.locked)) { … }
+```
+
+one test with an admin and one with a regular user run every line and take both branches, yet neither checks that `isOwner` or `!doc.locked` matters. **Modified condition/decision coverage** asks for tests showing that each condition, on its own, changes the outcome. It is required for the most critical avionics software (DO-178C Level A) and recommended for ISO 26262 ASIL D, and it is a great lens for any logic-heavy code: permissions, validation, pricing, feature flags.
 
 ## Features
 
-- **Decision analysis:** `if`, `while`, `do…while`, `for`, ternaries, and `&&` / `||` anywhere, including JSX and TypeScript.
-- **Short-circuit-aware truth tables:** conditions that are never evaluated are marked "don't care" (`–`).
-- **Two MC/DC variants:** masking (the default, as accepted by DO-178C) and unique-cause.
-- **Minimal test sets:** chosen by an exact search, with a greedy fallback for very large decisions.
-- **Linked views:**
-  - source code, with conditions underlined and the traced path **bolded with a red marker**
-  - a control-flow graph for each function, with the example path drawn in red
-  - a condition graph for each decision, showing how `&&` / `||` short-circuit
-  - the condition pairs, and test vectors where ★ marks the minimal set
-- **Measured coverage:** write calls in the **Tests** panel and press Run. The code is instrumented, run in an isolated Web Worker (stopped after 5 s), and every decision evaluation is matched to its test vectors. Coverage shows in the code, the decision panel (**Hits**, covered/needed pairs), the toolbar, the project overview and exported reports, and the AI prompt then asks only for the missing tests.
-- **Whole-project analysis:** open a folder (or drag one onto the page) to get a file tree with per-file decision counts, a project overview with the decisions needing the most tests, and in-memory editing. Dependency, build and cache folders, `.gitignore`d paths, `*.d.ts`, minified files and (by default) test files are skipped, each with a reason.
-- **Standalone HTML report:** one file you can share, with click-to-trace, a "How to read this report" section, and an **AI test-generation prompt** (whole report or per decision) for turning the required tests into runnable unit tests.
-- **Built-in help:** the **Help** button, or the `?` key.
+- **Minimal test sets:** for every decision, the short-circuit-aware truth table, the independence pairs, and the fewest tests that cover them all ([masking](#masking-vs-unique-cause) or unique-cause MC/DC).
+- **Traced paths:** pick a test and its route is drawn in red through the control-flow graph and the condition flow, and the code it runs is bolded.
+- **Measured coverage:** write calls like `test('admin', () => canEdit(admin))` in the **Tests** panel and press Run. The code is instrumented and run in an isolated worker, and every evaluation is matched to its test vector, so you see exactly which tests are still **needed**.
+- **Whole projects:** open or drag in a folder for a file tree, per-file counts and the decisions that need the most tests. `node_modules`, build output, `.gitignore`d paths and (optionally) test files are skipped.
+- **Reports and AI prompts:** export one self-contained HTML file with click-to-trace, plus a prompt that asks an AI assistant to write only the missing tests.
+- **Built-in help:** press `?` in the app.
 
-## Getting started
+![Project overview with totals, the decisions needing the most tests, and per-file results](docs/images/project-overview.png)
 
-Requires **Node.js 20.19+** (Node 22 recommended; see `.nvmrc`). Vite 7 fails on older Node versions, e.g. with `crypto.hash is not a function` when building.
+## Quick start
+
+You need [Node.js](https://nodejs.org/) 20.19 or newer (22 recommended).
 
 ```bash
-nvm use            # picks up .nvmrc
+git clone https://github.com/arjayosma/mcdc-analyzer.git
+cd mcdc-analyzer
 npm install
-npm run dev        # http://localhost:5173
+npm run dev
 ```
 
-Paste code into the editor, pick **Load example…**, or use **Open folder…** for a whole project. Then click a decision and a test row to trace it.
+Open the URL Vite prints (usually http://localhost:5173), then pick **Load example… → Basic: 5 conditions** to look around.
 
-### Scripts
+Using [nvm](https://github.com/nvm-sh/nvm)? Run `nvm use` first; the repo pins Node 22 in `.nvmrc`.
+
+## Using it
+
+1. **Add code.** Paste a function or file, choose an example, or use **Open folder…** (or drag a folder onto the page).
+2. **Pick a decision.** Click it in the list, click its hexagon in the graph, or click any underlined condition in the code.
+3. **Read the tests.** The **Test vectors** table lists every feasible combination; ★ marks the minimal set. Click a row to trace it.
+4. **Measure.** Write calls in the **Tests** panel under the editor and press **Run** (⌘/Ctrl+Enter). The Hits column, the code underlines and the toolbar show what your tests cover.
+5. **Share.** **Export report** downloads an HTML file; **Copy prompt** in the report gives an AI assistant everything it needs to write the missing tests.
+
+Example test code for the basic example:
+
+```js
+const cart = (over) => ({ items: [1], total: 80, locked: false, ...over });
+const user = (over) => ({ loggedIn: true, verified: true, ...over });
+
+test('happy path', () => canCheckout(cart(), user()));
+test('empty cart', () => canCheckout(cart({ items: [] }), user()));
+test('locked cart', () => canCheckout(cart({ locked: true }), user()));
+```
+
+The file's top-level functions and exports are in scope; in a project, files can import each other by relative path.
+
+### Masking vs unique-cause
+
+- **Masking** (default, accepted by DO-178C): other conditions may change between the two tests of a pair, as long as they cannot affect the outcome. Often needs fewer than N+1 tests.
+- **Unique-cause**: only the condition under test may change (short-circuited conditions are "don't care"). Stricter.
+
+Switch between them in the toolbar to compare.
+
+## Development
+
+```bash
+npm run dev        # start the app with hot reload
+npm run check      # typecheck + lint + tests: run this before pushing
+npm run build      # production build into dist/
+```
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Typecheck and build the static site into `dist/` |
-| `npm run preview` | Serve the built `dist/` locally |
-| `npm test` | Run the unit tests once (Vitest) |
-| `npm run test:watch` | Run the tests in watch mode |
+| `npm run dev` | Vite dev server |
+| `npm run check` | `typecheck`, `lint` and `test` in one go (what CI runs, plus the build) |
+| `npm test` | Unit tests once (Vitest) |
+| `npm run test:watch` | Unit tests in watch mode |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm run build` | Typecheck and build the static site into `dist/` |
+| `npm run preview` | Serve the built `dist/` locally |
 
-### Deploying
+The app is plain TypeScript with no UI framework, built with Vite. `dist/` uses relative paths, so it can be hosted from any static host or sub-path; every push to `main` deploys it to GitHub Pages.
 
-`npm run build` produces a fully static `dist/` with relative asset paths, so it can be served from any static host or sub-path.
-
-## How it works
-
-```
-source ──► language adapter ──► program model ──► MC/DC engine ──► UI / HTML report
-           (Babel for JS/TS)    decisions,         truth table,
-                                conditions,        pairs,
-                                CFG, ranges        minimal set
-```
-
-1. **Adapter** (`src/adapters/javascript`): parses the code with `@babel/parser`, and finds each decision and its condition tree with exact source ranges. It also builds a statement-level control-flow graph for each function. Repeated side-effect-free conditions are treated as the same condition ("coupled"); calls are not.
-2. **Engine** (`src/engine`): works only on a language-neutral boolean tree. It builds the short-circuit truth table by exploring branches rather than all 2ⁿ combinations, finds independence pairs for the chosen MC/DC variant, and selects the minimal test set (branch-and-bound with a step budget).
-3. **UI** (`src/ui`): CodeMirror for the source, elkjs to lay out the control-flow graph, and hand-drawn SVG for the condition graphs. A small store keeps every view in sync.
-4. **Coverage** (`src/coverage`): wraps every decision and condition in recording calls at their exact source positions (values and short-circuiting are unchanged), converts TypeScript/JSX/ESM with Sucrase, runs the code with the user's `test()` calls in a Web Worker, and matches each recorded evaluation to a truth-table row.
-5. **Report** (`src/report`): renders the same SVGs and help content into a single HTML file. A small inline script adds click-to-trace and the copy-prompt buttons.
-
-## Project structure
+### How it works
 
 ```
-src/
-  adapters/javascript/   Babel AST → decisions, condition trees, CFG
-  model/types.ts         Language-neutral program model + LanguageAdapter interface
-  engine/                Truth tables, independence pairs, minimal set, condition graph
-  cfg/                   CFG layout (elkjs) and example-path finding
-  coverage/              Instrumentation, Web Worker test runner, measured coverage
-  analysis.ts            Runs the engine over every decision in a program
-  ui/                    App shell, code pane, CFG view, decision panel, help
-  project/               Folder loading, .gitignore matching, file selection, project summary
-  report/                HTML report builder, AI test prompt, inline runtime script
-  styles/                Shared design tokens and component styles (app + report)
-tests/                   Vitest unit tests (engine, adapter, paths, project, report, prompt, help)
+source ─► language adapter ─► program model ─► MC/DC engine ─► UI · HTML report
+          (Babel for JS/TS)   decisions,        truth tables,      │
+                              conditions, CFG   pairs, min. set    ▼
+                                                          instrumented run (Web Worker)
+                                                          ─► measured coverage
 ```
 
-## Adding a language
+| Folder | Responsibility |
+| --- | --- |
+| `src/engine/` | Language-neutral boolean trees → short-circuit truth tables, independence pairs, minimal test sets |
+| `src/adapters/javascript/` | Babel AST → decisions, conditions (exact source ranges) and per-function control-flow graphs |
+| `src/model/` | The language-neutral program model and the `LanguageAdapter` interface |
+| `src/cfg/` | Graph layout (elkjs) and example paths through the graph |
+| `src/coverage/` | Instrumentation, the Web Worker test runner (Sucrase for TS/JSX) and matching runs to vectors |
+| `src/project/` | Folder loading, `.gitignore` matching, file selection and project summaries |
+| `src/report/` | Standalone HTML report, AI test prompt and the report's inline script |
+| `src/ui/` | App shell, code pane, graphs, decision panel, tests panel, file tree, help |
+| `tests/` | Vitest tests mirroring `src/` |
 
-The engine and UI never look at language syntax. To support another language:
+Want to add a language? The engine and UI never look at syntax: implement a `LanguageAdapter` (see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-language)).
 
-1. Implement `LanguageAdapter` from `src/model/types.ts`. `parse(source)` must return a `ProgramModel`: functions with control-flow graphs, and decisions with condition trees whose leaves are numbered `0..n-1` in source order, plus source ranges.
-2. Add tests alongside `tests/adapters/javascript`.
-3. Wire the adapter into `src/ui/App.ts`.
+## Limitations
 
-tree-sitter (via WebAssembly) is the natural choice for adding several languages, Java included.
+- Measuring coverage runs your calls in the browser: npm packages can't be imported (project files can, and JSX gets a small React stand-in), decorators can be analyzed but not run, and existing Jest/Vitest suites aren't measured yet.
+- In the control-flow graph, `throw` goes straight to exit and a `catch` is reachable from the start of its `try`.
+- `switch` cases are branches, not MC/DC decisions; `??` and `?.` are treated as single conditions.
+- Truth tables are capped at 1,024 rows per decision and projects at 2,000 files.
 
-## Known limitations
+## Contributing
 
-- Measuring coverage runs your calls in the browser: npm packages are not available (only project files, plus a small React stand-in for JSX), decorators are not supported when running (Sucrase limitation), and it does not run your existing Jest/Vitest suites.
-- Projects are analyzed on the main thread in small time slices; very large folders (thousands of files) take a while, and are capped at 2,000 files.
-- `.gitignore` support covers the common syntax (`*`, `?`, `**`, `[...]`, `!`, anchoring, folder-only rules) but not every edge case of git's matcher.
-- Edits to project files stay in the browser tab; they are never written back to disk.
-- In the control-flow graph, `throw` goes straight to exit, and a `catch` is reachable from the start of its `try`.
-- `switch` cases are shown as branches, not MC/DC decisions; `??` and `?.` are not decisions.
-- Truth tables are capped at 1024 rows per decision (flagged as "truncated").
-- The main bundle is about 820 kB (256 kB gzipped). elkjs (1.4 MB) loads only when the first graph is drawn.
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers the setup, conventions and where things live.
 
-## Troubleshooting
+## License
 
-- **`npm install` fails with `Cannot read properties of null (reading 'edgesOut')`:** this is a bug in npm 10.9. Run the install with npm 11 instead: `npx npm@11 install`.
+[MIT](LICENSE) © Arjay Osma
