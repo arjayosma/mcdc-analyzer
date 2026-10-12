@@ -1,0 +1,64 @@
+/* Design tokens shared by the app and the exported report. */
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #d9dde3;
+  --text: #1d2433;
+  --muted: #667085;
+  --accent: #1f6feb;
+  --accent-soft: #e5efff;
+  /* The path colour: red, as in the original tool. */
+  --path: #d92d20;
+  --path-soft: #fdecea;
+  --true: #067647;
+  --true-soft: #e3f6ec;
+  --false: #475467;
+  --false-soft: #eceef2;
+  --warning: #b54708;
+  --warning-soft: #fff4e5;
+  --node: #ffffff;
+  --node-stroke: #98a2b3;
+  --edge: #98a2b3;
+  --syn-keyword: #8250df;
+  --syn-string: #0a7d43;
+  --syn-number: #b35900;
+  --syn-comment: #8a94a6;
+  --syn-def: #0550ae;
+  --syn-type: #953800;
+  --syn-tag: #116329;
+  --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1218;
+    --surface: #161a22;
+    --surface-2: #1e232d;
+    --border: #2c3340;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --accent: #58a6ff;
+    --accent-soft: #1b2a40;
+    --path: #ff6b5e;
+    --path-soft: #3a1d1b;
+    --true: #4ade80;
+    --true-soft: #12301f;
+    --false: #b4bccb;
+    --false-soft: #262c37;
+    --warning: #f5a524;
+    --warning-soft: #33250f;
+    --node: #1b2029;
+    --node-stroke: #4b5565;
+    --edge: #5d6778;
+    --syn-keyword: #d2a8ff;
+    --syn-string: #7ee2a8;
+    --syn-number: #ffb86b;
+    --syn-comment: #7d8798;
+    --syn-def: #79c0ff;
+    --syn-type: #ffa657;
+    --syn-tag: #7ee787;
+  }
+}

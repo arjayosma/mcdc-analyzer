@@ -1,0 +1,535 @@
+/* Report-only layout; tokens.css and components.css are inlined before this. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 var(--sans);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+
+a {
+  color: var(--accent);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.report-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.report-header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.report-header .meta {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.report-header .summary-chips {
+  padding: 0;
+}
+
+.report-diagnostics {
+  margin: 12px 24px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.report-diagnostics ul {
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+.report-hint {
+  margin: 12px 24px;
+  color: var(--muted);
+  max-width: 90ch;
+}
+
+.report-help {
+  margin: 0 24px 16px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.report-help summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.report-help[open] summary {
+  margin-bottom: 12px;
+}
+
+.report-prompt {
+  margin: 0 24px 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+
+.prompt-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.prompt-intro h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.prompt-intro p {
+  margin: 0 0 4px;
+  max-width: 80ch;
+}
+
+.copy-prompt {
+  flex: none;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: 600 13px var(--sans);
+  cursor: pointer;
+}
+
+.copy-prompt.is-small {
+  margin-left: auto;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.copy-prompt.is-copied {
+  background: var(--true-soft);
+  color: var(--true);
+}
+
+.prompt-preview {
+  margin-top: 10px;
+}
+
+.prompt-preview summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.prompt-text {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: 12px/1.5 var(--mono);
+  resize: vertical;
+}
+
+.report-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 5fr) minmax(0, 7fr);
+  gap: 16px;
+  padding: 0 24px 24px;
+  align-items: start;
+}
+
+.source-pane {
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.source-pane h2,
+.toc h2 {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.source {
+  padding: 6px 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.src-line {
+  display: flex;
+  padding-right: 12px;
+  scroll-margin-top: 40vh;
+}
+
+.src-line .ln {
+  flex: none;
+  width: 4ch;
+  margin-right: 12px;
+  text-align: right;
+  color: var(--muted);
+  user-select: none;
+}
+
+.src-line code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.src-line:target {
+  background: var(--accent-soft);
+}
+
+/* Lines the traced path runs through: bold, with a red marker. */
+.src-line.on-path {
+  box-shadow: inset 3px 0 0 var(--path);
+  background: color-mix(in srgb, var(--path-soft) 55%, transparent);
+  font-weight: 700;
+}
+
+.src-cond {
+  text-decoration: underline dotted color-mix(in srgb, var(--accent) 55%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.src-cond.is-uncoverable {
+  text-decoration: underline wavy var(--warning);
+}
+
+.src-cond.is-decision {
+  background: var(--accent-soft);
+}
+
+.src-cond.is-true {
+  color: var(--true);
+}
+
+.src-cond.is-false {
+  color: var(--false);
+}
+
+.src-cond.is-none {
+  opacity: 0.45;
+  font-weight: 400;
+}
+
+.src-cond[data-tag]::after {
+  content: attr(data-tag);
+  display: inline-block;
+  margin: 0 2px 0 3px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font: 600 10px/16px var(--sans);
+  vertical-align: 2px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  opacity: 1;
+}
+
+main {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.toc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.toc ul {
+  margin: 0;
+  padding: 8px 12px 8px 28px;
+}
+
+.toc li {
+  margin: 3px 0;
+}
+
+.toc li ul {
+  padding: 2px 0 2px 16px;
+}
+
+.toc a {
+  text-decoration: none;
+}
+
+.toc a:hover code {
+  text-decoration: underline;
+}
+
+.function {
+  display: grid;
+  gap: 12px;
+  scroll-margin-top: 12px;
+}
+
+.function > h2 {
+  margin: 8px 0 0;
+  font-size: 17px;
+}
+
+.function > h2 code {
+  font-size: 16px;
+}
+
+.line-link {
+  margin-left: 8px;
+  font: 400 12px var(--sans);
+  white-space: nowrap;
+}
+
+.cfg-figure {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.cfg-figure figcaption,
+.decision h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.cfg-scroll {
+  overflow-x: auto;
+}
+
+.cfg-scroll .cfg-svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.decision {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  scroll-margin-top: 12px;
+}
+
+.decision.is-active {
+  border-color: var(--path);
+}
+
+.decision-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.decision-heading .decision-text {
+  overflow-wrap: anywhere;
+}
+
+.decision .summary-chips {
+  padding: 0;
+}
+
+.decision-body {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(220px, 1fr);
+  gap: 12px;
+}
+
+.condition-item {
+  cursor: default;
+}
+
+.truth-table-block {
+  margin: 0;
+}
+
+.source-path {
+  margin-left: 6px;
+  font: 500 12px var(--mono);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.file {
+  display: grid;
+  gap: 16px;
+  scroll-margin-top: 12px;
+}
+
+.file-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+}
+
+.file-heading h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.file-heading .copy-prompt.is-small {
+  margin-left: 0;
+}
+
+.show-source {
+  margin-left: auto;
+}
+
+.text-button {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: 12px var(--sans);
+  cursor: pointer;
+}
+
+.toc-file > a code {
+  font-weight: 600;
+}
+
+.no-decisions {
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.no-decisions summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.report-footer {
+  padding: 16px 24px 32px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1000px) {
+  .report-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .source-pane {
+    position: static;
+    max-height: none;
+  }
+
+  .decision-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .prompt-intro {
+    flex-direction: column;
+  }
+
+  .report-header,
+  .report-layout {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .report-hint,
+  .report-help,
+  .report-prompt,
+  .report-diagnostics {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .report-hint,
+  .report-help,
+  .report-prompt,
+  .copy-prompt,
+  .show-source {
+    display: none;
+  }
+
+  /* Print every file's source, not just the one on screen. */
+  .source[hidden] {
+    display: block;
+  }
+
+  .report-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .source-pane {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .decision,
+  .cfg-figure {
+    break-inside: avoid;
+  }
+}
