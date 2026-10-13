@@ -32,6 +32,7 @@ describe('AI test prompt', () => {
     expect(prompt).toContain('### Decision 1: if at line 2 in `shouldShip`');
     expect(prompt).toContain('### Decision 2: logical at line 7 in `shouldShip`');
     expect(prompt).toContain('The full report has 7 required tests');
+    expect(prompt).toContain('## Required test cases\n\nWrite every row marked **required**;');
     expect(prompt).not.toContain('9. Put the tests');
   });
 

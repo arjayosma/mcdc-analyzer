@@ -151,6 +151,23 @@
   font-weight: 600;
 }
 
+/* The condition list sits beside the graph when both fit, and wraps below it otherwise. */
+.decision-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.decision-body > .graph-block {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+.decision-body > .conditions-block {
+  flex: 1 1 320px;
+  min-width: min(320px, 100%);
+}
+
 .graph-block,
 .conditions-block,
 .truth-table-block {

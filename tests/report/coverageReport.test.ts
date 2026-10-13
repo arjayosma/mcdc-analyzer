@@ -57,6 +57,25 @@ describe('report with measured coverage', () => {
     expect(prompt).toContain('Not reached by my existing tests.');
   });
 
+  it('uses heading and totals that match the measured statuses', () => {
+    const prompt = assembleTestPrompt(buildTestPromptParts(files, 'masking'));
+
+    expect(prompt).toContain('## Test cases\n\nWrite a test for every row marked **missing**. Rows marked "covered" already have a test;');
+    expect(prompt).not.toContain('marked **required**');
+    // d0 still needs #2 and #3; d1 was never reached, so all 3 of its tests are needed.
+    expect(prompt).toContain('Across the full report, 5 more tests are needed;');
+  });
+
+  it('still asks for required rows in files that were not measured', () => {
+    const other = analyzeSource('export const g = (x, y) => x || y;', javascriptAdapter, 'masking');
+    const prompt = assembleTestPrompt(
+      buildTestPromptParts([...files.map((f) => ({ ...f, path: 'src/f.ts' })), { path: 'src/g.ts', analysis: other }], 'masking'),
+    );
+
+    expect(prompt).toContain('(and every row marked **required** in decisions my tests were not measured for)');
+    expect(prompt).toContain('Across the full report, 8 more tests are needed;');
+  });
+
   it('says when a decision needs nothing more', () => {
     const rows = analysis.decisions.get('d0')?.rows ?? [];
     const full = fileCoverage(analysis, rows.map((row) => seen('d0', [...row.values], row.outcome, 'all')));

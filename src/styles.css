@@ -604,16 +604,7 @@ select:focus-visible,
 }
 
 .decision-body {
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(220px, 1fr);
-  gap: 12px;
   padding: 10px 12px;
-}
-
-@media (max-width: 1200px) {
-  .decision-body {
-    grid-template-columns: 1fr;
-  }
 }
 
 .decision-panel h3 {

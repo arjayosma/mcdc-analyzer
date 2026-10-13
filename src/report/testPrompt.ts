@@ -66,7 +66,9 @@ ${
 
   const files: Record<string, PromptFile> = {};
   let number = 0;
+  // Tests still to write: missing rows where tests were measured, else the minimal set.
   let total = 0;
+  let unmeasuredDecisions = 0;
   reportFiles.forEach((reportFile, index) => {
     const { program } = reportFile.analysis;
     const key = fileKey(index);
@@ -79,7 +81,9 @@ ${
       const fn = functions.get(decision.functionId);
       if (!result || !fn) continue;
       number++;
-      total += result.selection.rows.length;
+      const measuredDecision = reportFile.coverage?.byDecision.get(decision.id);
+      total += measuredDecision ? measuredDecision.missingRows.length : result.selection.rows.length;
+      if (!measuredDecision) unmeasuredDecisions++;
       const coverage = reportFile.coverage?.byDecision.get(decision.id);
       decisions[decisionKey(key, decision.id)] = decisionBlock(number, decision, result, fn, reportFile.path, program.source, lineOf, coverage);
     }
@@ -94,8 +98,14 @@ ${
 
   return {
     intro,
-    heading: '## Required test cases\n\nWrite every row marked "required"; the other rows are listed for context only.',
-    outro: `## Output\n\nReturn the complete test file(s) ready to run. Then list: (a) any test case you could not implement and why, and (b) the review notes for conditions that cannot be shown. The full report has ${plural(total, 'required test')}; when only some decisions are included here, cover just those.`,
+    heading: measured
+      ? `## Test cases\n\nWrite a test for every row marked **missing**${
+          unmeasuredDecisions > 0 ? ' (and every row marked **required** in decisions my tests were not measured for)' : ''
+        }. Rows marked "covered" already have a test; "optional" rows are listed for context only.`
+      : '## Required test cases\n\nWrite every row marked **required**; the other rows are listed for context only.',
+    outro: `## Output\n\nReturn the complete test file(s) ready to run. Then list: (a) any test case you could not implement and why, and (b) the review notes for conditions that cannot be shown. ${
+      measured ? `Across the full report, ${plural(total, 'more test')} ${total === 1 ? 'is' : 'are'} needed` : `The full report has ${plural(total, 'required test')}`
+    }; when only some decisions are included here, cover just those.`,
     files,
   };
 }
