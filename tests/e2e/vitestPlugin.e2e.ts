@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { javascriptAdapter } from '../../src/adapters/javascript';
 import { analyzeSource } from '../../src/analysis';
@@ -23,7 +24,13 @@ describe('mcdc-analyzer/vitest end to end', () => {
   beforeAll(() => {
     rmSync(output, { force: true });
     // Run from the sample folder, like a developer running `npx vitest run` in their project.
-    log = execFileSync(process.execPath, [vitestBin, 'run'], { cwd: sample, encoding: 'utf8', env: { ...process.env, CI: '1' } });
+    const raw = execFileSync(process.execPath, [vitestBin, 'run'], {
+      cwd: sample,
+      encoding: 'utf8',
+      env: { ...process.env, CI: '1', NO_COLOR: '1', FORCE_COLOR: '0' },
+    });
+    // CI terminals may still colour the output; compare plain text.
+    log = stripVTControlCharacters(raw);
     coverage = parseCoverageFile(readFileSync(output, 'utf8'));
   });
 
