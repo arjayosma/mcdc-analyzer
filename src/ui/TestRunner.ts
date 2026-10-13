@@ -143,11 +143,22 @@ export class TestRunner {
     }
 
     const failed = run.tests.filter((t) => !t.ok).length;
+    const evaluations = run.observations.reduce((sum, o) => sum + (o.count ?? 1), 0);
+    const origin = run.origin?.kind === 'file' ? run.origin : null;
     const parts: (HTMLElement | null)[] = [
+      origin
+        ? h('p', { class: 'tests-origin' }, [
+            'Coverage from ',
+            h('strong', {}, [origin.fileName]),
+            ` · ${origin.runner} run on ${formatDate(origin.createdAt)}. Running here replaces it with this panel's results.`,
+          ])
+        : null,
       run.error ? h('p', { class: 'tests-error' }, [h('strong', {}, ['Run stopped: ']), run.error]) : null,
       view.stale ? h('p', { class: 'tests-stale' }, ['The code changed since this run, so its results are hidden. Run again to update coverage.']) : null,
       h('p', { class: 'tests-summary' }, [
-        `${plural(run.tests.length, 'test')}${failed ? ` · ${failed} failed` : ''} · ${plural(run.observations.length, 'decision evaluation')} · ${run.durationMs} ms`,
+        origin
+          ? plural(evaluations, 'decision evaluation')
+          : `${plural(run.tests.length, 'test')}${failed ? ` · ${failed} failed` : ''} · ${plural(evaluations, 'decision evaluation')} · ${run.durationMs} ms`,
         view.file ? ` · ${view.file.decisionsComplete}/${view.file.decisions} decisions fully covered` : '',
       ]),
       run.tests.length
@@ -196,3 +207,9 @@ export function starterTemplate(analysis: ProgramAnalysis | null): string {
     '',
   ].join('\n');
 }
+
+function formatDate(iso: string): string {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' });
+}
+

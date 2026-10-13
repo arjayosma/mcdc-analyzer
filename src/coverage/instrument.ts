@@ -25,6 +25,25 @@ interface Insertion {
  * comma expressions and object literals intact.
  */
 export function instrumentSource(program: ProgramModel, fileId: string): string {
+  const { source } = program;
+  let output = '';
+  let cursor = 0;
+  for (const insertion of instrumentationInsertions(program, fileId)) {
+    output += source.slice(cursor, insertion.position) + insertion.text;
+    cursor = insertion.position;
+  }
+  return output + source.slice(cursor);
+}
+
+/**
+ * The recording calls to insert, sorted so that applying them in order at
+ * their positions yields the instrumented source. Shared by the app (plain
+ * string) and the Vitest plugin (which also needs a source map).
+ */
+export function instrumentationInsertions(
+  program: ProgramModel,
+  fileId: string,
+): readonly { readonly position: number; readonly text: string }[] {
   const file = JSON.stringify(fileId);
   const insertions: Insertion[] = [];
   const wrap = (range: SourceRange, before: string, after: string, rank: number): void => {
@@ -41,20 +60,11 @@ export function instrumentSource(program: ProgramModel, fileId: string): string 
     }
   }
 
-  insertions.sort((a, b) => {
+  return insertions.sort((a, b) => {
     if (a.position !== b.position) return a.position - b.position;
     // At one position, close the ranges that end here before opening new ones.
     if (a.opens !== b.opens) return a.opens ? 1 : -1;
     // Opening: outer (bigger, then decision) first. Closing: inner first.
     return a.opens ? b.size - a.size || a.rank - b.rank : a.size - b.size || b.rank - a.rank;
   });
-
-  const { source } = program;
-  let output = '';
-  let cursor = 0;
-  for (const insertion of insertions) {
-    output += source.slice(cursor, insertion.position) + insertion.text;
-    cursor = insertion.position;
-  }
-  return output + source.slice(cursor);
 }

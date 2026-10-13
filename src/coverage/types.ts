@@ -8,6 +8,8 @@ export interface Observation {
   readonly outcome: boolean;
   /** Name of the `test()` that was running, if any. */
   readonly test: string | null;
+  /** Identical evaluations recorded together (from coverage files); 1 when absent. */
+  readonly count?: number;
 }
 
 export interface TestResult {
@@ -16,8 +18,14 @@ export interface TestResult {
   readonly error?: string;
 }
 
-/** Everything one press of Run produced. */
+/** Where a coverage run came from: the in-app Tests panel or a loaded coverage file. */
+export type CoverageOrigin =
+  | { readonly kind: 'runner' }
+  | { readonly kind: 'file'; readonly fileName: string; readonly runner: string; readonly createdAt: string };
+
+/** Everything one press of Run (or one loaded coverage file) produced. */
 export interface CoverageRun {
+  readonly origin?: CoverageOrigin;
   readonly observations: readonly Observation[];
   readonly tests: readonly TestResult[];
   readonly logs: readonly string[];

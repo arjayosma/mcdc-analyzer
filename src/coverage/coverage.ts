@@ -52,15 +52,18 @@ export function decisionCoverage(result: DecisionAnalysis, observations: readonl
   let unmatched = 0;
   const outcomes = { true: false, false: false };
 
+  let evaluations = 0;
   for (const observation of observations) {
+    const times = observation.count ?? 1;
+    evaluations += times;
     outcomes[observation.outcome ? 'true' : 'false'] = true;
     const rowId = rowsByKey.get(rowKey(observation.values));
     if (rowId === undefined) {
-      unmatched++;
+      unmatched += times;
       continue;
     }
     const hit = hits.get(rowId) ?? { count: 0, tests: new Set<string>() };
-    hit.count++;
+    hit.count += times;
     if (observation.test !== null) hit.tests.add(observation.test);
     hits.set(rowId, hit);
   }
@@ -85,7 +88,7 @@ export function decisionCoverage(result: DecisionAnalysis, observations: readonl
   }
 
   return {
-    evaluations: observations.length,
+    evaluations,
     rowHits: new Map([...hits].map(([rowId, hit]) => [rowId, { count: hit.count, tests: [...hit.tests] }])),
     unmatched,
     outcomes,

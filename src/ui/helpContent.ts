@@ -115,6 +115,10 @@ export const HELP_SECTIONS: readonly HelpSection[] = [
           'Editing the code hides results that no longer line up; run again to refresh them. With measured results, the AI prompt asks only for the missing tests.',
         ],
       },
+      {
+        kind: 'p',
+        text: '**Your real test suite (Vitest):** install the plugin with `npm i -D mcdc-analyzer`, add `mcdc()` from `mcdc-analyzer/vitest` to the `plugins` of your Vitest config, and run `vitest run`. It writes `mcdc-coverage.json`, which contains your sources and every recorded evaluation with its test name. Open it with **Load coverage…**, drop it onto the page, or link to `?coverage=<url of the file>`.',
+      },
     ],
   },
   {

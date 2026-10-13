@@ -5,6 +5,7 @@ import { buildProject, folderFromDropEntries, folderFromFileList, type LoadedFol
 import { projectSummary } from '../project/summary';
 import type { Project, ProjectFile } from '../project/types';
 import { coveragePercent, type CoverageTotals } from '../coverage/coverage';
+import { CoverageFileError, coverageFileToRun, parseCoverageFile } from '../coverage/coverageFile';
 import { runTests } from '../coverage/runner';
 import { exportReport, type ReportRequest } from '../report/exportReport';
 import { CfgView } from './CfgView';
@@ -190,6 +191,43 @@ export function mountApp(root: HTMLElement): void {
     await analyzeProject();
   };
 
+  const notice = h('div', { class: 'app-notice', attrs: { role: 'alert' } });
+  notice.hidden = true;
+  const showNotice = (message: string): void => {
+    notice.replaceChildren(
+      h('span', {}, [message]),
+      h('button', { class: 'icon-button', title: 'Dismiss', attrs: { 'aria-label': 'Dismiss' }, on: { click: () => (notice.hidden = true) } }, ['×']),
+    );
+    notice.hidden = false;
+  };
+
+  /** Opens a coverage file from a test-runner integration: its sources become the project. */
+  const openCoverage = async (fileName: string, text: string): Promise<void> => {
+    let loaded: ReturnType<typeof coverageFileToRun>;
+    try {
+      loaded = coverageFileToRun(parseCoverageFile(text), fileName);
+    } catch (error) {
+      showNotice(error instanceof CoverageFileError ? `${fileName}: ${error.message}` : `Could not open ${fileName}.`);
+      return;
+    }
+    notice.hidden = true;
+    analysisRun++;
+    loadedFolder = null;
+    clearTimeout(timer);
+    store.set({
+      project: {
+        name: loaded.projectName,
+        files: loaded.sources.map(({ path, source }) => ({ path, source, analysis: null, edited: false })),
+        skipped: [],
+        otherFiles: 0,
+      },
+      coverage: loaded.run,
+      progress: { phase: 'analyzing', done: 0, total: loaded.sources.length },
+    });
+    showOverview();
+    await analyzeProject();
+  };
+
   const closeProject = (): void => {
     analysisRun++;
     loadedFolder = null;
@@ -258,6 +296,18 @@ export function mountApp(root: HTMLElement): void {
     },
   });
   const openFolder = (): void => folderInput.click();
+  const coverageInput = h('input', {
+    class: 'visually-hidden',
+    attrs: { type: 'file', accept: '.json,application/json', tabindex: -1, 'aria-hidden': 'true' },
+    on: {
+      change: () => {
+        const file = coverageInput.files?.[0];
+        if (file) void file.text().then((text) => openCoverage(file.name, text));
+        coverageInput.value = '';
+      },
+    },
+  });
+  const openCoverageFile = (): void => coverageInput.click();
 
   const exampleSelect = h(
     'select',
@@ -351,7 +401,7 @@ export function mountApp(root: HTMLElement): void {
 
   const summary = h('div', { class: 'summary', attrs: { 'aria-live': 'polite' } });
   const diagnostics = h('div', { class: 'diagnostics', attrs: { role: 'status' } });
-  const welcome = renderWelcome(loadExample, () => codePane.focus(), openHelp, openFolder);
+  const welcome = renderWelcome(loadExample, () => codePane.focus(), openHelp, openFolder, openCoverageFile);
   const editorBar = h('div', { class: 'editor-bar' });
   const dropOverlay = h('div', { class: 'drop-overlay', attrs: { 'aria-hidden': 'true' } }, [
     h('div', {}, [h('strong', {}, ['Drop a folder to analyze it']), h('span', {}, ['or a single .js / .ts file to open it in the editor'])]),
@@ -368,6 +418,15 @@ export function mountApp(root: HTMLElement): void {
       h('header', { class: 'toolbar' }, [
         h('div', { class: 'brand' }, [h('span', { class: 'logo', attrs: { 'aria-hidden': 'true' } }, ['◇']), 'MC/DC Analyzer']),
         h('button', { class: 'text-button open-folder', title: 'Analyze a whole folder (you can also drag one onto the page)', on: { click: openFolder } }, ['Open folder…']),
+        h(
+          'button',
+          {
+            class: 'text-button open-folder',
+            title: 'Open mcdc-coverage.json written by the mcdc-analyzer Vitest plugin (or drop it onto the page)',
+            on: { click: openCoverageFile },
+          },
+          ['Load coverage…'],
+        ),
         exampleSelect,
         h('div', { class: 'segmented', attrs: { role: 'group', 'aria-label': 'MC/DC variant' } }, modeButtons),
         summary,
@@ -377,6 +436,8 @@ export function mountApp(root: HTMLElement): void {
       workspace,
     ]),
     folderInput,
+    coverageInput,
+    notice,
     dropOverlay,
     helpDialog,
   );
@@ -384,13 +445,31 @@ export function mountApp(root: HTMLElement): void {
   setUpDragAndDrop(dropOverlay, {
     folder: (entries) => void folderFromDropEntries(entries).then(startProject),
     file: (file) =>
-      void file.text().then((source) => {
+      void file.text().then((text) => {
+        // A dropped .json file is a coverage file; anything else opens in the editor.
+        if (/\.json$/i.test(file.name)) {
+          void openCoverage(file.name, text);
+          return;
+        }
         if (store.get().project) closeProject();
         store.set({ ...NO_SELECTION });
-        codePane.setSource(source);
+        codePane.setSource(text);
         analyzeEditor();
       }),
   });
+
+  // ?coverage=<url> opens a hosted coverage file, e.g. a link from CI.
+  const coverageUrl = new URLSearchParams(window.location.search).get('coverage');
+  if (coverageUrl) {
+    const fileName = coverageUrl.split(/[?#]/)[0]?.split('/').pop() || 'mcdc-coverage.json';
+    void fetch(coverageUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
+      .then((text) => openCoverage(fileName, text))
+      .catch((error: unknown) => showNotice(`Could not load ${coverageUrl}: ${error instanceof Error ? error.message : String(error)}`));
+  }
 
   store.subscribe((state) => {
     const hasProject = state.project !== null;
@@ -542,6 +621,7 @@ function renderWelcome(
   focusEditor: () => void,
   openHelp: () => void,
   openFolder: () => void,
+  openCoverageFile: () => void,
 ): HTMLElement {
   return h('div', { class: 'welcome' }, [
     h('h1', {}, ['Paste code to analyze']),
@@ -561,6 +641,13 @@ function renderWelcome(
     ]),
     h('p', { class: 'muted welcome-note' }, [
       'You can also drag a project folder onto the page. Files are read in your browser only; nothing is uploaded.',
+    ]),
+    h('p', { class: 'muted welcome-note' }, [
+      'Using Vitest? Add the ',
+      h('code', {}, ['mcdc-analyzer/vitest']),
+      ' plugin, run your tests, then ',
+      h('button', { class: 'link-button', on: { click: openCoverageFile } }, ['load mcdc-coverage.json']),
+      ' to see the MC/DC coverage of your real test suite.',
     ]),
     h('h2', {}, ['Or start from an example']),
     h(

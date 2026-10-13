@@ -17,6 +17,7 @@ Before you push, run the same checks as CI:
 ```bash
 npm run check    # typecheck + lint + tests
 npm run build    # make sure the production build still works
+npm run test:e2e # if you touched src/integrations or src/coverage: real Vitest run on a sample project
 ```
 
 ## Workflow
@@ -38,6 +39,7 @@ Every push to `main` runs CI and redeploys the [live demo](https://arjayosma.git
 | `src/coverage/` | Instrumentation, Web Worker runner, coverage matching | `tests/coverage/` (runs instrumented code under Node) |
 | `src/project/` | Folder loading, `.gitignore` matching, file selection, summaries | `tests/project/` |
 | `src/report/` | HTML report, AI prompt, the report's inline `runtime.js` | `tests/report/` |
+| `src/integrations/vitest/` | The published `mcdc-analyzer/vitest` plugin (built by `vite.lib.config.ts` into `dist-lib/`) | `tests/integrations/`, and `tests/e2e/` which runs real Vitest on `tests/e2e/vitest-sample/` |
 | `src/ui/` | Views and the app shell | `tests/ui/` for pure helpers; views are checked in the browser |
 | `src/styles/` | Design tokens and component styles shared by the app and the report | |
 
@@ -50,6 +52,15 @@ Every push to `main` runs CI and redeploys the [live demo](https://arjayosma.git
 - **Red means "path".** The selected test's route uses `--path`; don't reuse red for other meanings.
 - **The report's `runtime.js` is plain JavaScript** inlined into exported files, and it re-implements `assembleTestPrompt` from `src/report/testPrompt.ts`. If you change how prompts are assembled, change both and check **Copy prompt** in an exported report: tests cover the TypeScript side and that the page's source text rebuilds the prompt exactly, but not the inline script itself.
 - **Examples are tested.** Every entry in `src/ui/examples.ts` must parse cleanly (`tests/ui/examples.test.ts`).
+
+## The npm package
+
+The repo is both the web app and the `mcdc-analyzer` npm package, which currently ships one entry point: `mcdc-analyzer/vitest`.
+
+- `npm run build:lib` bundles the plugin with everything it needs (Babel parser, magic-string, the analyzer) into `dist-lib/`, so the package has **no runtime dependencies**; `vite` and `vitest` are peer dependencies.
+- The public types are hand-written in `src/integrations/vitest/public.d.ts`; `index.ts` fails to compile if they drift from the implementation.
+- The app's own libraries are dev dependencies because Vite bundles them into the website.
+- Releasing: bump `version` in `package.json`, then `npm publish` (its `prepublishOnly` script runs all checks and the end-to-end test first), and tag a GitHub release.
 
 ## Adding a language
 

@@ -77,6 +77,13 @@ export class ProjectOverview {
         h('p', { class: 'muted' }, [
           `${plural(summary.files, 'file')} analyzed${project.skipped.length ? ` · ${project.skipped.length} skipped` : ''}. Pick a file on the left, or start from the decisions that need the most tests.`,
         ]),
+        state.coverage?.origin?.kind === 'file'
+          ? h('p', { class: 'muted' }, [
+              'Measured coverage from ',
+              h('strong', {}, [state.coverage.origin.fileName]),
+              ` (${state.coverage.origin.runner}).`,
+            ])
+          : '',
       ]),
       busy,
       h('div', { class: 'stat-grid' }, [

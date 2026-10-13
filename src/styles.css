@@ -1348,3 +1348,37 @@ select:focus-visible,
   }
 }
 
+/* ---------- Notices and inline links ---------- */
+
+.app-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(640px, calc(100vw - 32px));
+  padding: 10px 12px 10px 16px;
+  transform: translateX(-50%);
+  border: 1px solid var(--path);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.2);
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tests-origin {
+  color: var(--muted);
+}
+

@@ -3,7 +3,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'dist-lib', 'node_modules', 'tests/e2e/vitest-sample/mcdc-coverage.json', '.consumer-test'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
