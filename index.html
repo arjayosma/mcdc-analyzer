@@ -3,12 +3,97 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MC/DC Analyzer</title>
-    <meta name="description" content="Find the minimal tests that prove every condition in your JavaScript or TypeScript matters, trace their paths, and measure real MC/DC coverage. Runs entirely in your browser." />
+    <title>MC/DC Analyzer: MC/DC coverage tool for JavaScript and TypeScript</title>
+    <meta
+      name="description"
+      content="Find the minimal tests that prove every condition in your JavaScript or TypeScript matters, trace their paths, and measure real MC/DC coverage. Free, open source, runs entirely in your browser."
+    />
+    <link rel="canonical" href="https://arjayosma.github.io/mcdc-analyzer/" />
+    <meta name="theme-color" content="#0f1218" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 15 8 8 15 1 8z' fill='none' stroke='%23d92d20' stroke-width='2'/%3E%3C/svg%3E" />
+
+    <!-- Link previews (Slack, LinkedIn, X, …) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MC/DC Analyzer" />
+    <meta property="og:title" content="MC/DC Analyzer: MC/DC coverage for JavaScript and TypeScript" />
+    <meta
+      property="og:description"
+      content="The minimal tests that prove every condition matters, traced through your code and measured. Free and open source, runs in your browser."
+    />
+    <meta property="og:url" content="https://arjayosma.github.io/mcdc-analyzer/" />
+    <meta property="og:image" content="https://arjayosma.github.io/mcdc-analyzer/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="MC/DC Analyzer showing code, its control-flow graph and the MC/DC test vectors" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Structured data for search engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MC/DC Analyzer",
+        "url": "https://arjayosma.github.io/mcdc-analyzer/",
+        "description": "Browser-based modified condition/decision coverage (MC/DC) analyzer for JavaScript and TypeScript: minimal test sets, traced paths, measured coverage and shareable reports.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any (web browser)",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "license": "https://opensource.org/licenses/MIT",
+        "image": "https://arjayosma.github.io/mcdc-analyzer/og-image.png",
+        "author": { "@type": "Person", "name": "Arjay Osma", "url": "https://github.com/arjayosma" },
+        "sameAs": ["https://github.com/arjayosma/mcdc-analyzer"]
+      }
+    </script>
+
+    <!-- Only styles the starter content below until the app replaces it. -->
+    <style>
+      .intro {
+        max-width: 720px;
+        margin: 48px auto;
+        padding: 0 16px;
+        font: 16px/1.55 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: #1d2433;
+      }
+      .intro h1 {
+        font-size: 28px;
+        margin: 0 0 12px;
+      }
+      @media (prefers-color-scheme: dark) {
+        html {
+          background: #0f1218;
+        }
+        .intro {
+          color: #e6e9ef;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Readable without JavaScript (and by crawlers); the app replaces it when it starts. -->
+      <main class="intro">
+        <h1>MC/DC Analyzer: MC/DC coverage for JavaScript and TypeScript</h1>
+        <p>
+          Find the smallest set of tests that proves every condition in your code actually changes the outcome
+          (modified condition/decision coverage). For every <code>if</code>, loop, ternary and <code>&amp;&amp;</code> /
+          <code>||</code> expression, MC/DC Analyzer works out the tests you need, traces each one through your code,
+          and measures which ones your tests already cover.
+        </p>
+        <ul>
+          <li>Minimal MC/DC test sets with short-circuit-aware truth tables (masking or unique-cause).</li>
+          <li>Control-flow and condition-flow graphs with the selected test's path highlighted.</li>
+          <li>Measured coverage: run your calls in the browser and see which tests are still needed.</li>
+          <li>Analyze a whole project folder, with .gitignore support.</li>
+          <li>Export a standalone HTML report and an AI prompt for the missing tests.</li>
+        </ul>
+        <p>
+          Free and open source (MIT). Your code is analyzed in your browser and never uploaded.
+          <a href="https://github.com/arjayosma/mcdc-analyzer">Source code on GitHub</a>.
+        </p>
+        <noscript><p><strong>MC/DC Analyzer needs JavaScript to run.</strong></p></noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
